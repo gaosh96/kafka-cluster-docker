@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+  zookeeper01:
+    image: zookeeper:3.6.2
+    hostname: zk01
+    container_name: kafka-zookeeper
+    ports:
+      - "12182:2181"
+    networks:
+      kafka-cluster:
+        ipv4_address: 172.18.2.2
+
+  kafka01:
+    image: bitnami/kafka:${KAFKA_VERSION:-2.4.1}
+    ports:
+      - "9092:9092"
+    hostname: kafka01
+    container_name: kafka-broker-01
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zk01:2181/kafka
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${HOSTNAME}:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    networks:
+      kafka-cluster:
+        ipv4_address: 172.18.2.6
+    extra_hosts:
+      - "zk01:172.18.2.2"
+      - "kafka02:172.18.2.7"
+      - "kafka03:172.18.2.8"
+    depends_on:
+      - "zookeeper01"
+
+  kafka02:
+    image: bitnami/kafka:${KAFKA_VERSION:-2.4.1}
+    ports:
+      - "9093:9093"
+    hostname: kafka02
+    container_name: kafka-broker-02
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zk01:2181/kafka
+      - KAFKA_LISTENERS=PLAINTEXT://:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${HOSTNAME}:9093
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    networks:
+      kafka-cluster:
+        ipv4_address: 172.18.2.7
+    extra_hosts:
+      - "zk01:172.18.2.2"
+      - "kafka01:172.18.2.6"
+      - "kafka03:172.18.2.8"
+    depends_on:
+      - "zookeeper01"
+
+  kafka03:
+    image: bitnami/kafka:${KAFKA_VERSION:-2.4.1}
+    ports:
+      - "9094:9094"
+    hostname: kafka03
+    container_name: kafka-broker-03
+    environment:
+      - KAFKA_BROKER_ID=3
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zk01:2181/kafka
+      - KAFKA_LISTENERS=PLAINTEXT://:9094
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${HOSTNAME}:9094
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    networks:
+      kafka-cluster:
+        ipv4_address: 172.18.2.8
+    extra_hosts:
+      - "zk01:172.18.2.2"
+      - "kafka01:172.18.2.6"
+      - "kafka02:172.18.2.7"
+    depends_on:
+      - "zookeeper01"
+
+networks:
+  kafka-cluster:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.2.0/16
