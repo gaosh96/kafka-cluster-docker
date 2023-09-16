@@ -17,7 +17,7 @@ kafka 2.4
 HOSTNAME=`hostname` docker-compose -f kafka_1zk_3brokers.yml -p kafka_cluster_dev up -d
 ```
 
-- 验证宿主机能否正常连接
+- 验证宿主机能否正常连接(http://archive.apache.org/dist/kafka/2.4.1/kafka_2.12-2.4.1.tgz)
 ```shell
 # create topic
 ./kafka-topics.sh --create --partitions 3 --replication-factor 1 --bootstrap-server `hostname`:9092,`hostname`:9093,`hostname`:9094 --topic kafka_test
@@ -25,6 +25,12 @@ HOSTNAME=`hostname` docker-compose -f kafka_1zk_3brokers.yml -p kafka_cluster_de
 # list topics
 ./kafka-topics.sh --list --bootstrap-server `hostname`:9092,`hostname`:9093,`hostname`:9094
 kafka_test
+
+# producer
+./kafka-console-producer.sh --broker-list `hostname`:9092,`hostname`:9093,`hostname`:9094 --topic kafka_test
+
+# consumer
+./kafka-console-consumer.sh --bootstrap-server `hostname`:9092,`hostname`:9093,`hostname`:9094 --topic kafka_test
 ```
 
 
